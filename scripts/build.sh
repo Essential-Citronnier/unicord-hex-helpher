@@ -1,7 +1,7 @@
 #!/bin/zsh
 # Universal(arm64 + x86_64) UnicodeHelper.app을 build/에 만든다.
-#   SIGN_IDENTITY="Developer ID Application: ..." 를 주면 배포용으로 서명 (hardened runtime),
-#   없으면 ad-hoc 서명 (내 Mac에서만 쓸 때).
+#   SIGN_IDENTITY  서명 인증서. 없으면 이 Mac의 Developer ID / Apple Development 인증서,
+#                  그것도 없으면 ad-hoc 서명 (재빌드할 때마다 손쉬운 사용 권한을 다시 줘야 함).
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
@@ -15,7 +15,8 @@ if ! command -v swiftc >/dev/null; then
   exit 1
 fi
 
-rm -rf build && mkdir -p "$APP/Contents/MacOS"
+rm -rf build && mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
+cp Resources/AppIcon.icns "$APP/Contents/Resources/"
 for arch in arm64 x86_64; do
   swiftc -O -target "$arch-apple-macos13" Sources/main.swift -o "build/$NAME-$arch"
 done
@@ -30,6 +31,7 @@ cat > "$APP/Contents/Info.plist" <<PLIST
   <key>CFBundleDisplayName</key><string>$NAME</string>
   <key>CFBundleIdentifier</key><string>$BUNDLE_ID</string>
   <key>CFBundleExecutable</key><string>$NAME</string>
+  <key>CFBundleIconFile</key><string>AppIcon</string>
   <key>CFBundlePackageType</key><string>APPL</string>
   <key>CFBundleShortVersionString</key><string>$VERSION</string>
   <key>CFBundleVersion</key><string>$VERSION</string>
@@ -39,8 +41,21 @@ cat > "$APP/Contents/Info.plist" <<PLIST
 </dict></plist>
 PLIST
 
+# 서명 인증서를 따로 주지 않으면 이 Mac에 있는 개발자 인증서를 쓴다.
+# ad-hoc 서명은 빌드할 때마다 서명이 바뀌어서 손쉬운 사용 권한이 매번 풀린다.
+if [[ -z "${SIGN_IDENTITY:-}" ]]; then
+  SIGN_IDENTITY=$(security find-identity -v -p codesigning \
+    | grep -E '"(Developer ID Application|Apple Development):' | grep -v REVOKED \
+    | head -1 | awk '{print $2}') || true
+fi
+
 if [[ -n "${SIGN_IDENTITY:-}" ]]; then
-  codesign --force --options runtime --timestamp --sign "$SIGN_IDENTITY" "$APP"
+  # 배포용(Developer ID)만 hardened runtime + 타임스탬프 (타임스탬프는 네트워크가 필요하다).
+  if security find-identity -v -p codesigning | grep -F "$SIGN_IDENTITY" | grep -q "Developer ID Application"; then
+    codesign --force --options runtime --timestamp --sign "$SIGN_IDENTITY" "$APP"
+  else
+    codesign --force --sign "$SIGN_IDENTITY" "$APP"
+  fi
 else
   codesign --force --sign - "$APP"
 fi

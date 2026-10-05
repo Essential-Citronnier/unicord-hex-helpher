@@ -8,7 +8,6 @@ for APP in "$HOME/Applications/$NAME.app" "/Applications/$NAME.app"; do
   "$APP/Contents/MacOS/$NAME" --unregister-login-item 2>/dev/null
 done
 
-osascript -e "quit app id \"$BUNDLE_ID\"" 2>/dev/null
 pkill -x "$NAME" 2>/dev/null
 
 # 이전 버전이 쓰던 LaunchAgent

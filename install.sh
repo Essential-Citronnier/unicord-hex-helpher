@@ -17,7 +17,6 @@ if [[ -f "$LEGACY_AGENT" ]]; then
   rm -f "$LEGACY_AGENT"
 fi
 
-osascript -e "quit app id \"$BUNDLE_ID\"" 2>/dev/null || true
 pkill -x "$NAME" 2>/dev/null || true
 sleep 0.5
 
