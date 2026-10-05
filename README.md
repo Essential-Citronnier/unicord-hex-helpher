@@ -10,7 +10,7 @@ macOS 입력 소스가 **Unicode Hex Input**일 때만 화면에 자주 쓰는 �
 ./uninstall.sh   # 앱과 LaunchAgent 제거
 ```
 
-Xcode 프로젝트 없이 `swiftc`만으로 빌드한다. 자동 실행은 `~/Library/LaunchAgents/com.daeseongkim.unicodehelper.plist`.
+Xcode 프로젝트 없이 `swiftc`만으로 빌드한다. 자동 실행은 `~/Library/LaunchAgents/io.github.lemonardo1.unicodehelper.plist`.
 
 ## 사용
 
@@ -21,3 +21,7 @@ Xcode 프로젝트 없이 `swiftc`만으로 빌드한다. 자동 실행은 `~/Li
 ## 문자 목록 수정
 
 `Sources/main.swift` 상단의 `symbolGroups`를 고친 뒤 `./install.sh`를 다시 실행.
+
+## 라이선스
+
+MIT

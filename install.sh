@@ -4,7 +4,7 @@ set -e
 cd "$(dirname "$0")"
 
 NAME="UnicodeHelper"
-BUNDLE_ID="com.daeseongkim.unicodehelper"
+BUNDLE_ID="io.github.lemonardo1.unicodehelper"
 APP="$HOME/Applications/$NAME.app"
 AGENT="$HOME/Library/LaunchAgents/$BUNDLE_ID.plist"
 
